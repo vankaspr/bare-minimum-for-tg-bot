@@ -8,7 +8,10 @@ def menu_kb(user_id) -> InlineKeyboardMarkup:
     menu = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text='ТехПод ⚙️', switch_inline_query_current_chat='/support')
+                InlineKeyboardButton(
+                    text='ТехПод ⚙️',
+                    callback_data="support_request"
+                )
             ]
         ]
     )
@@ -16,7 +19,11 @@ def menu_kb(user_id) -> InlineKeyboardMarkup:
     if IsAdmin(user_id):
         logger.info(f"Батя в здании, допаем красную кнопку.")
         menu.inline_keyboard.append(
-            [InlineKeyboardButton(text='🎀 Админ-панель 🎀', callback_data='admin')]
+            [InlineKeyboardButton(
+                text='🎀 Админ-панель 🎀',
+                callback_data='admin'
+            )]
         )
 
     return menu
+
