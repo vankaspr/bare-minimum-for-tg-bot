@@ -14,7 +14,7 @@ def menu_kb(user_id) -> InlineKeyboardMarkup:
     )
 
     if IsAdmin(user_id):
-        logger.info(f"Батя в здании, допаем красную кнопку...")
+        logger.info(f"Батя в здании, допаем красную кнопку.")
         menu.inline_keyboard.append(
             [InlineKeyboardButton(text='🎀 Админ-панель 🎀', callback_data='admin')]
         )

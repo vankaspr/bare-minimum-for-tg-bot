@@ -9,5 +9,5 @@ async def set_commands():
         BotCommand(command="support", description="supporter"),
 
     ]
-    logger.info("Set commands...")
+    logger.info("Устанавливаем команды для бота...")
     await bot.set_my_commands(cmd, BotCommandScopeDefault())
