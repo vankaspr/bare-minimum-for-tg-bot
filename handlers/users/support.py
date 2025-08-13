@@ -8,7 +8,9 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message
 
 from config import support_group_id
+
 from settings import bot
+from settings.middlewares import logger
 
 support_router = Router()
 
@@ -33,8 +35,11 @@ async def process_support(
 ):
     user_issue = message.text
     current_time = datetime.now().strftime("%d.%m.%Y, %H:%M")
-    await message.answer("Перенаправили ваш запрос в тех.поддержку!\n"
-                         "Решим проблему как только, так сразу 😇")
+    logger.info("Штопаем саппорт-клаву, получаем сообщение в саппорт-канал")
+    await message.answer(
+        "Перенаправили ваш запрос в тех.поддержку!\n"
+        "Решим проблему как только, так сразу 😇",
+    )
 
 
     await bot.send_message(
@@ -42,7 +47,7 @@ async def process_support(
         f"⚠️ <b>Support</b> | New request\n\n"
         f"👤 From: @{message.from_user.username}\n\n"
         f"🆔 : <code>{message.from_user.id}</code>\n\n"
-        F"📅 Date: {current_time}\n\n"
+        f"📅 Date: {current_time}\n\n"
         f"<b>📩 Issue:</b>\n\n"
         f"<blockquote>{user_issue}</blockquote>",
         parse_mode="HTML"
