@@ -19,5 +19,6 @@ path= ".venv"
 python = ">=3.12,<3.15"
 aiogram = "^3.21.0"
 black = "^25.1.0"
+dotenv = "^0.9.9"
 
 
