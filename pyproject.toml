@@ -1,0 +1,23 @@
+[project]
+name = "YobaBot"
+version = "0.1.0"
+authors = [
+    {name  = "Vanny", email = "msvankaspr@gmail.com"}
+]
+description = "..."
+readme = "README.md"
+dynamic = ["dependencies", "requires-python"]
+
+[tool.poetry]
+package-mode = false
+
+[virtualenvs]
+in-project = true
+path= ".venv"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.15"
+aiogram = "^3.21.0"
+black = "^25.1.0"
+
+
