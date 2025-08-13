@@ -2,12 +2,13 @@ import asyncio
 from handlers.users import router, support_router
 from settings import dp, bot
 from settings.middlewares import logger
+from utilities import set_commands
 
 
 async def main():
     dp.include_router(router=router)
     dp.include_router(router=support_router)
-
+    await set_commands()
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
