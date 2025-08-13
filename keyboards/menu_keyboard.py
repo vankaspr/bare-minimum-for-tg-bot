@@ -1,10 +1,9 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from filters import IsAdmin
-from services import add_back_to_home_button
 from settings.middlewares import logger
 
 
 def menu_kb(user_id) -> InlineKeyboardMarkup:
+    from filters import IsAdmin
     menu = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text='ТехПод ⚙️',callback_data="menu:support")],
@@ -18,12 +17,3 @@ def menu_kb(user_id) -> InlineKeyboardMarkup:
         )
 
     return menu
-
-
-def support_kb():
-    menu = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="Есть ещё проблемы?", callback_data="menu:support")],
-        ]
-    )
-    return add_back_to_home_button(menu)
