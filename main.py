@@ -1,6 +1,6 @@
 import asyncio
 
-from core.config import dp, bot
+from core.config import dp, bot, logger
 from core.routers import router
 
 
@@ -12,4 +12,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    logger.info("Start YoBa↗️")
     asyncio.run(main())
