@@ -1,7 +1,11 @@
+"""
+    Handler for command --> /start
+    Handler for callback --> menu:home
+"""
+
 from aiogram import Router, F
 from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
-from filters import IsAdmin
 from keyboards import menu_kb
 from settings.middlewares import logger
 

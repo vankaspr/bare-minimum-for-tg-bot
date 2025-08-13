@@ -1,11 +1,16 @@
+"""
+    Handler for command --> /admin
+    Handler for callback --> admin:admin
+"""
+
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from filters import IsAdmin
 from keyboards import admin_kb
 from settings.middlewares import logger
 
-
 admin_router = Router()
+
 
 @admin_router.callback_query(F.data == "admin:admin")
 async def admin(callback: CallbackQuery):

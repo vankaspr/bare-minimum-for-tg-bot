@@ -1,5 +1,6 @@
 """
     Handler for command --> /support
+    Handler for callback --> menu:support
 """
 
 from typing import Union
