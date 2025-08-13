@@ -1,5 +1,4 @@
 import asyncio
-
 from handlers.users import router, support_router
 from settings import dp, bot
 from settings.middlewares import logger
@@ -14,5 +13,11 @@ async def main():
 
 
 if __name__ == "__main__":
-    logger.info("Start YoBa↗️")
-    asyncio.run(main())
+
+    logger.info("🔁 Бот запускается...")
+
+    try:
+        logger.info("✅ Бот успешно запущен!")
+        asyncio.run(main())
+    except Exception as e:
+        logger.error(f"🆘 Ошибка при запуске бота: {e}")
