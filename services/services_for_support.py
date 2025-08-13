@@ -1,7 +1,6 @@
 from datetime import datetime
 from aiogram.types import User, Message
 from config import support_group_id
-from keyboards import support_kb
 from settings import bot
 from settings.middlewares import logger
 
@@ -27,6 +26,7 @@ async def process_support_message(
 ):
     """Process user support request"""
     try:
+        from keyboards import support_kb
         logger.info("Обработка запроса в поддержку")
         support_message = await format_support_message(message.from_user, message.text)
 
