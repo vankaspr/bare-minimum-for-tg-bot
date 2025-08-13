@@ -7,7 +7,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message
 
-from core.config import bot, support_group_id
+from config import support_group_id
+from settings import bot
 
 support_router = Router()
 

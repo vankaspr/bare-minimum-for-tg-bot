@@ -1,7 +1,8 @@
 import asyncio
 
-from core.config import dp, bot, logger
-from core.routers import router, support_router
+from handlers.users import router, support_router
+from settings import dp, bot
+from settings.middlewares import logger
 
 
 async def main():
