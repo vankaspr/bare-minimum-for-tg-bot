@@ -7,6 +7,7 @@ async def set_commands():
     cmd = [
         BotCommand(command="start", description="hi-message"),
         BotCommand(command="support", description="supporter"),
+        BotCommand(command="help", description="commands list")
 
     ]
     logger.info("Устанавливаем команды для бота...")
