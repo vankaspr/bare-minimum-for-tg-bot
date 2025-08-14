@@ -7,8 +7,8 @@ from typing import Union
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, CallbackQuery
-from services import process_support_message
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
+from services import process_support_message, add_back_to_home_button
 
 support_router = Router()
 
@@ -31,8 +31,10 @@ async def cmd_process_support_request(
         message = event
 
     await state.set_state(SupportForm.waiting_for_issue)
+    back = InlineKeyboardMarkup(inline_keyboard=[])
     await message.answer(
-        "Опишите вашу проблему в одном сообщении."
+        "Опишите вашу проблему в одном сообщении.",
+        reply_markup=add_back_to_home_button(back)
     )
 
 
