@@ -4,9 +4,12 @@
 """
 
 from aiogram import Router, F
-from aiogram.filters import CommandStart
-from aiogram.types import Message, CallbackQuery
+from aiogram.filters import CommandStart, Command
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
+
+
 from keyboards import menu_kb
+from services import add_back_to_home_button
 from settings.middlewares import logger
 
 router = Router()
@@ -14,12 +17,14 @@ router = Router()
 @router.message(CommandStart())
 async def cmd_start(message: Message):
     """Main menu"""
-    sms = "hihi"
+    sms = "Всем велком -_-"
     logger.info("Выкатываем главное меню.")
     await message.answer(sms, reply_markup=menu_kb(message.from_user.id))
 
+
 @router.callback_query(F.data == "menu:home")
-async def cmd_back_to_home(call: CallbackQuery):
+async def cmd_back_to_home(
+        call: CallbackQuery):
     """Return to main menu"""
     await call.answer()
     logger.info("Вернулись в главное меню.")
@@ -27,3 +32,21 @@ async def cmd_back_to_home(call: CallbackQuery):
         "Вы вернулись в главное меню 🤸🏻",
         reply_markup=menu_kb(call.from_user.id)
     )
+
+@router.message(F.text.lower() == "/help")
+async def get_help(message: Message):
+    """Help cmd"""
+    logger.info("Выкатываем список команд")
+    sms = (
+        f"Возможности и опции бота:\n\n"
+        f"Команда <b>/support</b> пригодится если вы столкнулись "
+        f"с какой-то проблемой при взаимодействии с ботом.\n\n"
+        f"Команда <b>...</b>"
+    )
+    back = InlineKeyboardMarkup(inline_keyboard=[])
+    await message.answer(
+        sms,
+        reply_markup=add_back_to_home_button(back),
+        parse_mode="HTML"
+    )
+    #TODO: оформить обработчик html
