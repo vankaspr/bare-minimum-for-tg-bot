@@ -12,7 +12,7 @@ class LoggingSettings:
     def __init__(
             self,
             name: str = "YoBa",
-            log_file: str = "bot.log",
+            log_file: str = "logs/bot.log",
             console_level: str = "INFO",
             file_level: str = "DEBUG",
             max_bytes: int = 5 * 1024 * 1024,
