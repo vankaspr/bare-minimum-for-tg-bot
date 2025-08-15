@@ -2,7 +2,11 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import CallbackQuery, Message
+from sqlalchemy.ext.asyncio import AsyncSession
+from database.crud import get_user_by_id, get_user_by_username
 from services.add_back_button import add_only_back_button
+from settings.middlewares import logger
+
 
 auxiliary_router = Router()
 
@@ -43,33 +47,45 @@ async def request_user_by_username(
 @auxiliary_router.message(UserSearch.waiting_for_id)
 async def process_user_id(
         message: Message,
-        state: FSMContext
+        state: FSMContext,
+        session: AsyncSession
 ):
     try:
-        user_id = int(message.text)
-        # Здесь должен быть поиск пользователя в БД
-        #
-        user = {"id": user_id, "username": "test_user"} # Заглушка
+        user_id = int(message.text.strip())
+        user = await get_user_by_id(session, user_id)
+
+        if not user:
+            await message.answer(
+                "❌ Пользователь не найден",
+                reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:found_user")
+            )
+            logger.debug("Пользователь не найден")
+            return
 
         await message.answer(
             f"👤 Найден пользователь:\n\n"
-            f"ID: {user['id']}\n"
-            f"Username: @{user['username']}",
+            f"ID: {user.id}\n"
+            f"Username: @{user.username}\n"
+            f"Статус: {'🔴 Забанен' if user.is_banned else '🟢 Активен'}",
             # reply_markup= клавиатура с действиями для пользователя (забанить написать и тд)
         )
 
         await state.clear()
 
     except ValueError:
-        await message.answer("❌ ID должен быть числом. Попробуйте еще раз:",
-                             reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:found_user"))
+        await message.answer(
+            "❌ ID должен быть числом. Попробуйте еще раз:",
+            reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:found_user")
+        )
 
 @auxiliary_router.message(UserSearch.waiting_for_query)
 async def process_username(
         message: Message,
-        state: FSMContext
+        state: FSMContext,
+        session: AsyncSession
 ):
-    username = message.text.strip()
+    username = message.text.strip().lstrip("@")
+
     if not username:
         await message.answer(
             "❌ Username не может быть пустым. Попробуйте еще раз:",
@@ -77,14 +93,21 @@ async def process_username(
         )
         return
 
-    # Здесь должен быть поиск пользователя в БД
-    #
-    user = {"id": 123456, "username": "test_user"}  # Заглушка
+    user = await get_user_by_username(session, username)
+
+    if not user:
+        await message.answer(
+            "❌ Пользователь не найден",
+            reply_markup=add_only_back_button(text="← Назад", callback_data="admin:found_user")
+        )
+        logger.debug("Пользователь не найден")
+        return
 
     await message.answer(
         f"👤 Найден пользователь:\n\n"
-        f"ID: {user['id']}\n"
-        f"Username: @{user['username']}",
+        f"ID: {user.id}\n"
+        f"Username: @{user.username}\n"
+        f"Статус: {'🔴 Забанен' if user.is_banned else '🟢 Активен'}",
     )
 
     await state.clear()
