@@ -1,7 +1,5 @@
-from .is_admin import IsAdmin
+from .is_admin import AdminFilter
 
 __all__ = [
-    "IsAdmin",
-
-
+    "AdminFilter",
 ]

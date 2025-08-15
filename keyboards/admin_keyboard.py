@@ -19,11 +19,9 @@ def users_kb():
         inline_keyboard=[
             [
                 InlineKeyboardButton(text="🔍 Найти гада", callback_data="admin:found_user"),
-                InlineKeyboardButton(text="📊 Статистика", callback_data="admin:user_stats")
             ],
             [
                 InlineKeyboardButton(text="⚠️ Активные баны", callback_data="admin:active_ban"),
-                InlineKeyboardButton(text="🚫 Забанить", callback_data="admin:user_ban")
             ]
         ]
     )
@@ -38,4 +36,27 @@ def search_user_kb():
         ]
     )
 
+    return add_back_to_admin_button(menu)
+
+def users_actions_kb():
+    menu = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Забанить", callback_data="admin:user_ban")],
+            [InlineKeyboardButton(text="Разбанить", callback_data="admin:user_unban")],
+            [InlineKeyboardButton(text="Написать", callback_data="admin:user_mes")],
+            [InlineKeyboardButton(text="Статистика", callback_data="admin:user_stats")],
+        ]
+    )
+
+    return add_back_to_admin_button(menu)
+
+def confirm_kb():
+    menu = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="✅ Да", callback_data="admin:confirm_yes"),
+                InlineKeyboardButton(text="❌ Нет", callback_data="admin:confirm_no"),
+            ]
+        ]
+    )
     return add_back_to_admin_button(menu)
