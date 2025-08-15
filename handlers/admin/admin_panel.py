@@ -2,28 +2,31 @@
     Handler for command --> /admin
     Handler for callback --> admin:admin
     Handler for callback --> admin:users
-                                --> admin:found_user
-                                --> admin:user_stats
                                 --> admin:active_ban
-                                --> admin:user_ban
+                                --> admin:found_user
+                                    --> admin:user_stats
+                                    --> admin:user_ban
+                                    --> admin:user_unban
+                                    --> admin:user_mes
     Handler for callback --> admin:error_logs
     Handler for callback --> admin:payments
     Handler for callback --> admin:broadcast
 """
+import html
 
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
-from filters.is_admin import IsAdmin
+from aiogram.types import Message, CallbackQuery
+from filters.is_admin import AdminFilter
 from keyboards import admin_kb, users_kb
 from keyboards.admin_keyboard import search_user_kb
-from services import add_back_to_home_button, add_only_back_button
+from services import add_only_back_button
 from settings.middlewares import logger
 from config import admin
 from utilities.error_logs import get_error_logs
 
 
 admin_router = Router()
-admin_router.callback_query.filter(IsAdmin(admin))
+admin_router.callback_query.filter(AdminFilter(admin))
 
 
 # --- Главное меню ---
@@ -62,22 +65,10 @@ async def found_user(callback: CallbackQuery):
     )
 
 
-@admin_router.callback_query(F.data == "admin:user_stats")
-async def get_stats(callback: CallbackQuery):
-    await callback.answer()
-    await callback.message.answer("Тут лежит статистика активности пользователей")
-
-
 @admin_router.callback_query(F.data == "admin:active_ban")
 async def get_active_ban(callback: CallbackQuery):
     await callback.answer()
     await callback.message.answer("Тут мы смотрим кого забанили")
-
-
-@admin_router.callback_query(F.data == "admin:user_ban")
-async def ban_user(callback: CallbackQuery):
-    await callback.answer()
-    await callback.message.answer("Тут мы баним блядей")
 
 
 # --- Системные функции ---
@@ -92,9 +83,11 @@ async def get_admin_logs(callback: CallbackQuery):
             "📭 Нет свежих ошибок ERROR/WARNING/DEBUG",
         )
 
+    safe_logs = html.escape(logs)
+
     await callback.message.answer(
         f"<b>Последние ошибки:</b>\n"
-        f"<pre>{logs}</pre>",
+        f"<pre>{safe_logs}</pre>",
         parse_mode="HTML",
         reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:admin")
     )
