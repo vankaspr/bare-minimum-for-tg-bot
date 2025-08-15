@@ -11,7 +11,7 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
 from filters.is_admin import IsAdmin
-from keyboards import admin_kb
+from keyboards import admin_kb, users_kb
 from services import add_back_to_home_button
 from settings.middlewares import logger
 from config import admin
@@ -61,6 +61,7 @@ async def get_admin_users(callback: CallbackQuery):
     await callback.message.answer(
         "Здесь будет лежать ещё одна клавиатура"
         "Где будет всё про пользователей",
+        reply_markup=users_kb()
     )
 
 @admin_router.callback_query(F.data == "admin:broadcast")
