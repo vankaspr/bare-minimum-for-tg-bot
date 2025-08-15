@@ -4,12 +4,10 @@
 """
 
 from aiogram import Router, F
-from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
-
-
+from aiogram.filters import CommandStart
+from aiogram.types import Message, CallbackQuery
 from keyboards import menu_kb
-from services import add_back_to_home_button
+from services import add_only_back_button
 from settings.middlewares import logger
 
 router = Router()
@@ -43,10 +41,9 @@ async def get_help(message: Message):
         f"с какой-то проблемой при взаимодействии с ботом.\n\n"
         f"Команда <b>...</b>"
     )
-    back = InlineKeyboardMarkup(inline_keyboard=[])
     await message.answer(
         sms,
-        reply_markup=add_back_to_home_button(back),
+        reply_markup=add_only_back_button(),
         parse_mode="HTML"
     )
     #TODO: оформить обработчик html
