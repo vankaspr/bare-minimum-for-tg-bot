@@ -22,10 +22,3 @@ SessionLocal = async_sessionmaker(
     expire_on_commit=False,
     class_=AsyncSession
 )
-
-async def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        await db.close()
