@@ -6,6 +6,9 @@
 from aiogram import Router, F
 from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from database.crud import get_or_create_user
 from keyboards import menu_kb
 from services import add_only_back_button
 from settings.middlewares import logger
@@ -13,10 +16,14 @@ from settings.middlewares import logger
 router = Router()
 
 @router.message(CommandStart())
-async def cmd_start(message: Message):
+async def cmd_start(
+        message: Message,
+        session: AsyncSession
+):
     """Main menu"""
+    user = await get_or_create_user(session, message.from_user)
     sms = "Всем велком -_-"
-    logger.info("Выкатываем главное меню.")
+    logger.debug(f"Привет, {user.username or user.id}! Ты добавлен в базу данных.")
     await message.answer(sms, reply_markup=menu_kb(message.from_user.id))
 
 
