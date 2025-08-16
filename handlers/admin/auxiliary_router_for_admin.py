@@ -24,6 +24,7 @@ class UserSearch(StatesGroup):
     waiting_for_message = State()
 
 
+# -------------------Found user by ID and Username-----------------------------------
 @auxiliary_router.callback_query(F.data == "admin:search_by_id")
 async def request_user_by_id(
         callback: CallbackQuery,
@@ -241,7 +242,7 @@ async def send_to_message_to_user(
             "✅ Сообщение отправлено пользователю",
             reply_markup=add_only_back_button(text="← Назад", callback_data="admin:admin")
         )
-        logger.info(f"Админ {message.from_user.id} отправил сообщение {user_data["user_id"]}")
+        logger.info(f"Админ {message.from_user.id} отправил сообщение {user_data['user_id']}")
 
     except Exception as e:
         logger.error(f"Не получается отправить пользователю сообщение: {e}")
@@ -251,31 +252,3 @@ async def send_to_message_to_user(
         )
     finally:
         await state.clear()
-
-
-# ---------------------------User Stats------------------------------------
-@auxiliary_router.callback_query(F.data == "admin:user_stats")
-async def request_user_stats(
-        callback: CallbackQuery,
-        state: FSMContext,
-        session: AsyncSession
-):
-    """Statistic on user"""
-    await callback.answer()
-    user_data = await state.get_data()
-
-    # Здесь вы будете реализовывать фактическое получение статистики.
-    # Например:
-    # stats = await get_user_stats(session, user_data["user_id"])
-
-    stats_text = (
-        f"📊 Статистика пользователя @{user_data['username']} за последнюю неделю:\n\n"
-        f"Отправлено команд: \n"
-        f"Активность: \n"
-        f"Последний визит: "
-    )
-
-    await callback.message.answer(
-        stats_text,
-        reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:admin")
-    )

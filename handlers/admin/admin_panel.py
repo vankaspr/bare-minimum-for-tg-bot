@@ -1,19 +1,19 @@
 """
-    Handler for command --> /admin
-    Handler for callback --> admin:admin
+    Handler for command --> /admin ✅
+    Handler for callback --> admin:admin ✅
     Handler for callback --> admin:users
                                 --> admin:active_ban
-                                --> admin:found_user
-                                    --> admin:user_stats
+                                --> admin:found_user ✅
+
                                     --> admin:user_ban
                                     --> admin:user_unban
-                                    --> admin:user_mes
-    Handler for callback --> admin:error_logs
+                                    --> admin:user_mes ✅
+    Handler for callback --> admin:error_logs ✅
     Handler for callback --> admin:payments
     Handler for callback --> admin:broadcast
 """
-import html
 
+import html
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from filters.is_admin import AdminFilter
@@ -23,7 +23,6 @@ from services import add_only_back_button
 from settings.middlewares import logger
 from config import admin
 from utilities.error_logs import get_error_logs
-
 
 admin_router = Router()
 admin_router.callback_query.filter(AdminFilter(admin))
@@ -42,19 +41,19 @@ async def admin(update: Message | CallbackQuery):
         logger.info("Получении админ-панели с команды")
         message = update
 
-    await message.answer("Админ-панель ⛏️",reply_markup=admin_kb())
+    await message.answer("Админ-панель ⛏️", reply_markup=admin_kb())
 
 
 # --- Раздел пользователей ---
 @admin_router.callback_query(F.data == "admin:users")
 async def get_admin_users(callback: CallbackQuery):
-
     await callback.answer()
     logger.info("Получении раздела о пользователях с колбэка")
     await callback.message.answer(
         "🛠 Управление пользователями",
         reply_markup=users_kb()
     )
+
 
 @admin_router.callback_query(F.data == "admin:found_user")
 async def found_user(callback: CallbackQuery):
@@ -91,10 +90,11 @@ async def get_admin_logs(callback: CallbackQuery):
         parse_mode="HTML",
         reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:admin")
     )
+
+
 # --- Дополнительные разделы ---
 @admin_router.callback_query(F.data == "admin:payments")
 async def get_admin_payments(callback: CallbackQuery):
-
     await callback.answer()
     logger.info("Получении информации о платежах с колбэка")
     await callback.message.answer(
@@ -102,9 +102,9 @@ async def get_admin_payments(callback: CallbackQuery):
         "На случай если я включу платежи",
     )
 
+
 @admin_router.callback_query(F.data == "admin:broadcast")
 async def get_admin_broadcast(callback: CallbackQuery):
-
     await callback.answer()
     logger.info("Создать рассылку с колбэка")
     await callback.message.answer(

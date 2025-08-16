@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, JSON
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -12,31 +12,11 @@ class User(Base):
     username = Column(String, nullable=True)
     is_banned = Column(Boolean)
     join_date = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    #last_activity = Column(DateTime, default=lambda: datetime.now(timezone.utc),
-                           #onupdate=lambda: datetime.now(timezone.utc))
 
-    activities = relationship(
-        "UserActivity",
-        back_populates="user"
-    )
 
     bans = relationship(
         "BanRecord",
         back_populates="user"
-    )
-
-
-class UserActivity(Base):
-    __tablename__ = "user_activities"
-
-    id = Column(Integer, primary_key=True,  autoincrement=True)
-    user_id  = Column(Integer, ForeignKey("users.id"))
-    action =  Column(String)
-    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-
-    user =  relationship(
-        "User",
-        back_populates="activities"
     )
 
 

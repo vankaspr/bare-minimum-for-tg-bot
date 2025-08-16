@@ -12,24 +12,27 @@ async def get_or_create_user(
         session: AsyncSession,
         telegram_user
 ) -> User:
-
-    result = await session.execute(
-        select(User).where(User.id == telegram_user.id)
-    )
-    user = result.scalar_one_or_none()
-
-    if user is None:
-        user = User(
-            id=telegram_user.id,
-            username=telegram_user.username,
-            is_banned=False
+    try:
+        result = await session.execute(
+            select(User).where(User.id == telegram_user.id)
         )
-        session.add(user)
-        await session.commit()
-        await session.refresh(user)
+        user = result.scalar_one_or_none()
 
-    return user
+        if user is None:
+            user = User(
+                id=telegram_user.id,
+                username=telegram_user.username,
+                is_banned=False
+            )
+            session.add(user)
+            await session.commit()
+            await session.refresh(user)
 
+        return user
+    except SQLAlchemyError as e:
+        await session.rollback()
+        logger.error(f"Ошибка при создании пользователя {telegram_user.id}: {e}")
+        raise  # Или вернуть None, если это допустимо
 
 async def get_user_by_id(
         session: AsyncSession,

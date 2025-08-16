@@ -44,7 +44,6 @@ def users_actions_kb():
             [InlineKeyboardButton(text="Забанить", callback_data="admin:user_ban")],
             [InlineKeyboardButton(text="Разбанить", callback_data="admin:user_unban")],
             [InlineKeyboardButton(text="Написать", callback_data="admin:user_mes")],
-            [InlineKeyboardButton(text="Статистика", callback_data="admin:user_stats")],
         ]
     )
 
