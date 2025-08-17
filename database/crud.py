@@ -1,9 +1,10 @@
 from typing import Optional
-from sqlalchemy import select
+from sqlalchemy import select, update, and_
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from database.models import User
+from database.models import User, BanRecord
 from settings.middlewares import logger
+from datetime import datetime, timezone
 
 
 async def get_or_create_user(
@@ -61,21 +62,62 @@ async def get_user_by_username(
 
 async def bun_user(
         session: AsyncSession,
-        user_id: int
+        user_id: int,
+        ban_reason: str = "Причина не указана",
+        banned_by: int | None = None
 ) -> None:
     """ban user by ID"""
     user = await get_user_by_id(session, user_id)
-    if user:
-        user.is_banned = True
-        await session.commit()
+
+    #if not user:
+    #    raise ValueError("Пользователь не найден")
+
+    user.is_banned = True
+
+    ban_record = BanRecord(
+        user_id=user_id,
+        ban_reason=ban_reason,
+        banned_by=banned_by,
+        is_active=True,
+        unban_date=None,  # Явно указываем None для новых банов
+        unbanned_by=None,
+        unban_reason=None
+    )
+
+    session.add(ban_record)
+    await session.commit()
+
 
 
 async def unban_user(
         session: AsyncSession,
-        user_id: int
+        user_id: int,
+        unbanned_by: int | None = None,
+        unban_reason: str = "Причина не указана",
 ) -> None:
     """unban user by ID"""
     user = await get_user_by_id(session, user_id)
-    if user:
-        user.is_banned = False
-        await session.commit()
+
+    #if not user:
+    #    raise ValueError("Пользователь не найден")
+
+    user.is_banned = False
+
+    stmt = (
+        update(BanRecord)
+        .where(
+            and_(
+                BanRecord.user_id == user_id,
+                BanRecord.is_active.is_(True)  # Используем is_() для булевых значений
+            )
+        )
+        .values(
+            is_active=False,
+            unbanned_by=unbanned_by,
+            unban_date=datetime.now(timezone.utc),
+            unban_reason=unban_reason
+        )
+    )
+
+    await session.execute(stmt)
+    await session.commit()
