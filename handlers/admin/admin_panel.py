@@ -4,9 +4,8 @@
     Handler for callback --> admin:users
                                 --> admin:active_ban
                                 --> admin:found_user ✅
-
-                                    --> admin:user_ban
-                                    --> admin:user_unban
+                                    --> admin:user_ban ✅
+                                    --> admin:user_unban ✅
                                     --> admin:user_mes ✅
     Handler for callback --> admin:error_logs ✅
     Handler for callback --> admin:payments
@@ -19,7 +18,7 @@ from aiogram.types import Message, CallbackQuery
 from filters.is_admin import AdminFilter
 from keyboards import admin_kb, users_kb
 from keyboards.admin_keyboard import search_user_kb
-from services import add_only_back_button
+from services import BACK_BUTTON
 from settings.middlewares import logger
 from config import admin
 from utilities.error_logs import get_error_logs
@@ -88,7 +87,7 @@ async def get_admin_logs(callback: CallbackQuery):
         f"<b>Последние ошибки:</b>\n"
         f"<pre>{safe_logs}</pre>",
         parse_mode="HTML",
-        reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:admin")
+        reply_markup=BACK_BUTTON
     )
 
 
