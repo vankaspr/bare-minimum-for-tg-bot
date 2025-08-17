@@ -75,6 +75,10 @@ class LoggingSettings:
             backup_count: int,
     ) -> RotatingFileHandler:
         """Rotating setting for log-file"""
+        # Создаём директорию, если её нет
+        import os
+        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+
         handler = RotatingFileHandler(
             filename=log_file,
             maxBytes=max_bytes,
