@@ -10,7 +10,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     username = Column(String, nullable=True)
-    is_banned = Column(Boolean)
+    is_banned = Column(Boolean, nullable=False)
     join_date = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
@@ -25,12 +25,17 @@ class BanRecord(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    reason = Column(String(200))
+    ban_reason = Column(String(200))
     banned_by = Column(Integer)
     ban_date = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     is_active = Column(Boolean, default=True)
 
+    unbanned_by = Column(Integer, nullable=True)
+    unban_date = Column(DateTime(timezone=True), nullable=True)
+    unban_reason = Column(String(200), nullable=True)
+
+
     user = relationship(
-        "User",
-        back_populates="bans"
-    )
+            "User",
+            back_populates="bans"
+        )
