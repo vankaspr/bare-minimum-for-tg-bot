@@ -4,6 +4,7 @@ from handlers.admin import admin_router, auxiliary_router
 from handlers.users import router, support_router
 from settings import dp, bot
 from settings.middlewares import logger
+from settings.middlewares.ban import BanMiddleware
 from settings.middlewares.db_session_middleware import DBSessionMiddleware
 from utilities import set_commands
 
@@ -11,7 +12,6 @@ from utilities import set_commands
 async def init_database():
     try:
         async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
         logger.info("✅ Таблицы БД успешно созданы/проверены")
     except Exception as e:
@@ -24,6 +24,7 @@ async def main():
     await init_database()
 
     dp.update.middleware(DBSessionMiddleware())
+    dp.update.middleware(BanMiddleware())
 
     dp.include_router(router=router)
     dp.include_router(router=support_router)
