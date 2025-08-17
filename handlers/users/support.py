@@ -8,10 +8,13 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
+
+from filters.ban_check import BannedUserFilter
 from services import process_support_message, add_only_back_button
 
 support_router = Router()
-
+support_router.message.filter(BannedUserFilter())
+support_router.callback_query.filter(BannedUserFilter())
 
 class SupportForm(StatesGroup):
     waiting_for_issue = State()

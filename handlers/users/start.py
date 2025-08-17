@@ -9,11 +9,15 @@ from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.crud import get_or_create_user
+from filters.ban_check import BannedUserFilter
 from keyboards import menu_kb
 from services import add_only_back_button
 from settings.middlewares import logger
 
+
 router = Router()
+router.message.filter(BannedUserFilter())
+router.callback_query.filter(BannedUserFilter())
 
 @router.message(CommandStart())
 async def cmd_start(
