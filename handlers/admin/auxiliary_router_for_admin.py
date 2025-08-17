@@ -3,13 +3,15 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from config import admin
-from database.crud import get_user_by_id, get_user_by_username
+from database.crud import get_user_by_id, get_user_by_username, bun_user, unban_user
 from filters import AdminFilter
-from keyboards.admin_keyboard import users_actions_kb
+from keyboards.admin_keyboard import users_actions_kb, confirm_kb
+from services import BACK_BUTTON
 from services.add_back_button import add_only_back_button
 from settings.middlewares import logger
+
+USER_NOT_FOUND_MSG = "❌ Пользователь не найден"
 
 auxiliary_router = Router()
 auxiliary_router.callback_query.filter(AdminFilter(admin))
@@ -29,12 +31,12 @@ class UserSearch(StatesGroup):
 async def request_user_by_id(
         callback: CallbackQuery,
         state: FSMContext
-):
+) -> None:
     """Found user by ID"""
     await callback.answer()
     await callback.message.answer(
         "Введите ID пользователя:",
-        reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:admin")
+        reply_markup=BACK_BUTTON
     )
     await state.set_state(UserSearch.waiting_for_id)
 
@@ -43,12 +45,12 @@ async def request_user_by_id(
 async def request_user_by_username(
         callback: CallbackQuery,
         state: FSMContext
-):
+) -> None:
     """Found user by username"""
     await callback.answer()
     await callback.message.answer(
         "Введите username (без @):",
-        reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:admin")
+        reply_markup=BACK_BUTTON
     )
     await state.set_state(UserSearch.waiting_for_query)
 
@@ -65,10 +67,10 @@ async def process_user_id(
 
         if not user:
             await message.answer(
-                "❌ Пользователь не найден",
+                USER_NOT_FOUND_MSG,
                 reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:found_user")
             )
-            logger.debug("Пользователь не найден")
+            logger.debug(USER_NOT_FOUND_MSG)
             return
 
         await state.update_data(user_id=user.id, username=user.username)
@@ -100,7 +102,7 @@ async def process_username(
     if not username:
         await message.answer(
             "❌ Username не может быть пустым. Попробуйте еще раз:",
-            reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:found_user")
+            reply_markup=BACK_BUTTON
         )
         return
 
@@ -108,10 +110,10 @@ async def process_username(
 
     if not user:
         await message.answer(
-            "❌ Пользователь не найден",
-            reply_markup=add_only_back_button(text="← Назад", callback_data="admin:found_user")
+            USER_NOT_FOUND_MSG,
+            reply_markup=BACK_BUTTON
         )
-        logger.debug("Пользователь не найден")
+        logger.debug(USER_NOT_FOUND_MSG)
         return
 
     await state.update_data(user_id=user.id, username=user.username)
@@ -133,9 +135,14 @@ async def request_to_ban_user(
 ):
     """Ban user by ID or Username"""
     await callback.answer()
+    data = await state.get_data()
+    user_id = data.get("user_id")
+
+    await state.update_data(user=user_id)
+
     await callback.message.answer(
-        "Забанить этого пользователя?",
-        reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:admin")
+        "Вы уверены, что хотите забанить этого пользователя?",
+        reply_markup=confirm_kb()
     )
 
     await state.set_state(UserSearch.waiting_for_ban_confirmation)
@@ -148,51 +155,85 @@ async def request_to_unban_user(
 ):
     """Unban user by ID or Username"""
     await callback.answer()
+    data = await state.get_data()
+    user_id = data.get("user_id")
+
     await callback.message.answer(
-        "Разбанить этого урода? Да или Нет?",
-        reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:admin")
+        "Вы уверены, что хотите разбанить этого пользователя?",
+        reply_markup=confirm_kb()
     )
     await state.set_state(UserSearch.waiting_for_unban_confirmation)
 
 
-@auxiliary_router.callback_query(F.data.startswith("admin:confirm_"), UserSearch.waiting_for_ban_confirmation)
+@auxiliary_router.callback_query(F.data.startswith("admin:confirm_yes"), UserSearch.waiting_for_ban_confirmation)
 async def confirm_ban_user(
         callback: CallbackQuery,
         state: FSMContext,
-        session: AsyncSession
+        session: AsyncSession,
+        bot: Bot
 ):
-    action = callback.data.split("_")[1]
-    user_data = await state.get_data()
+    data = await state.get_data()
+    user_id = data.get("user_id")
 
-    if ...:
-        ...
-    else:
+    try:
+        await bun_user(session, user_id)
         await callback.message.answer(
-            "❌ Действие отменено",
-            reply_markup=add_only_back_button("← Назад", callback_data="admin:admin")
+            f"✅ Пользователь с ID {user_id} успешно забанен",
+            reply_markup=BACK_BUTTON
         )
 
-    await state.clear()
+        try:
+            await bot.send_message(
+                user_id,
+                "⛔ Вы были забанены администратором.\n"
+                "Для выяснения причин обратитесь к администрации."
+            )
+        except Exception as e:
+            logger.error(f"Не удалось отправить уведомление пользователю {user_id}: {e}")
+
+    except Exception as e:
+        logger.error(f"Ошибка при бане пользователя {user_id}: {e}")
+        await callback.message.answer(
+            f"❌ Не удалось забанить пользователя: {e}",
+            reply_markup=BACK_BUTTON
+        )
+    finally:
+        await state.clear()
 
 
-@auxiliary_router.callback_query(F.data.startswith("admin:confirm_"), UserSearch.waiting_for_unban_confirmation)
+@auxiliary_router.callback_query(F.data.startswith("admin:confirm_yes"), UserSearch.waiting_for_unban_confirmation)
 async def confirm_unban_user(
         callback: CallbackQuery,
         state: FSMContext,
-        session: AsyncSession
+        session: AsyncSession,
+        bot: Bot
 ):
-    action = callback.data.split("_")[1]
-    user_data = await state.get_data()
+    data = await state.get_data()
+    user_id = data.get("user_id")
 
-    if ...:
-        ...
-    else:
+    try:
+        await unban_user(session, user_id)
         await callback.message.answer(
-            "❌ Действие отменено",
-            reply_markup=add_only_back_button("← Назад", callback_data="admin:admin")
+            f"✅ Пользователь с ID {user_id} успешно разбанен",
+            reply_markup=BACK_BUTTON
         )
 
-    await state.clear()
+        try:
+            await bot.send_message(
+                user_id,
+                "✅ Вы были разбанены администратором."
+            )
+        except Exception as e:
+            logger.error(f"Не удалось отправить уведомление пользователю {user_id}: {e}")
+
+    except Exception as e:
+        logger.error(f"Ошибка при разбане пользователя {user_id}: {e}")
+        await callback.message.answer(
+            f"❌ Не удалось разабанить пользователя: {e}",
+            reply_markup=BACK_BUTTON
+        )
+    finally:
+        await state.clear()
 
 
 # -------------------SEND USER MESSAGE------------------------------------
@@ -205,13 +246,9 @@ async def start_send_message_to_user(
     await callback.answer()
     user_data = await state.get_data()
 
-    if "user_id" not in user_data:
-        await callback.answer("❌ Ошибка: пользователь не найден")
-        return
-
     await callback.message.answer(
         "✉️ Введите текст сообщения для пользователя (макс. 1000 символов):",
-        reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:admin")
+        reply_markup=BACK_BUTTON
     )
 
     await state.set_state(UserSearch.waiting_for_message)
@@ -229,7 +266,7 @@ async def send_to_message_to_user(
     if len(text) > 1000:
         await message.answer(
             "❌ Сообщение слишком длинное (макс. 1000 символов)",
-            reply_markup=add_only_back_button(text="← Назад", callback_data="admin:admin")
+            reply_markup=BACK_BUTTON
         )
         return
 
@@ -240,7 +277,7 @@ async def send_to_message_to_user(
         )
         await message.answer(
             "✅ Сообщение отправлено пользователю",
-            reply_markup=add_only_back_button(text="← Назад", callback_data="admin:admin")
+            reply_markup=BACK_BUTTON
         )
         logger.info(f"Админ {message.from_user.id} отправил сообщение {user_data['user_id']}")
 
@@ -248,7 +285,7 @@ async def send_to_message_to_user(
         logger.error(f"Не получается отправить пользователю сообщение: {e}")
         await message.answer(
             "❌ Не удалось отправить сообщение",
-            reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:admin")
+            reply_markup=BACK_BUTTON
         )
     finally:
         await state.clear()
