@@ -54,7 +54,6 @@ def confirm_kb():
         inline_keyboard=[
             [
                 InlineKeyboardButton(text="✅ Да", callback_data="admin:confirm_yes"),
-                InlineKeyboardButton(text="❌ Нет", callback_data="admin:confirm_no"),
             ]
         ]
     )
