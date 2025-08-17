@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy import select, update, and_
+from sqlalchemy import select, update, and_, func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import User, BanRecord
@@ -69,7 +69,7 @@ async def bun_user(
     """ban user by ID"""
     user = await get_user_by_id(session, user_id)
 
-    #if not user:
+    # if not user:
     #    raise ValueError("Пользователь не найден")
 
     user.is_banned = True
@@ -88,7 +88,6 @@ async def bun_user(
     await session.commit()
 
 
-
 async def unban_user(
         session: AsyncSession,
         user_id: int,
@@ -98,7 +97,7 @@ async def unban_user(
     """unban user by ID"""
     user = await get_user_by_id(session, user_id)
 
-    #if not user:
+    # if not user:
     #    raise ValueError("Пользователь не найден")
 
     user.is_banned = False
@@ -121,3 +120,28 @@ async def unban_user(
 
     await session.execute(stmt)
     await session.commit()
+
+
+async def get_active_ban_count(session: AsyncSession) -> int:
+    """Returns the number of active bans"""
+    stmt = (
+        select(func.count())
+        .select_from(BanRecord)
+        .where(BanRecord.is_active == True)
+    )
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none() or 0
+
+
+async def get_active_bans_list(session: AsyncSession) -> list[tuple[BanRecord, str]]:
+    """Returns a list of active bans with username"""
+    stmt = (
+        select(
+            BanRecord, User.username
+        )
+        .join(User, BanRecord.user_id == User.id)
+        .where(BanRecord.is_active == True)
+        .order_by(BanRecord.ban_date.desc())
+    )
+    result = await session.execute(stmt)
+    return result.all()
