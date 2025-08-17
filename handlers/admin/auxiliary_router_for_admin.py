@@ -4,11 +4,14 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 from config import admin
-from database.crud import get_user_by_id, get_user_by_username, bun_user, unban_user
+from database.crud import (get_user_by_id,
+                           get_user_by_username,
+                           bun_user,
+                           unban_user)
 from filters import AdminFilter
-from keyboards.admin_keyboard import users_actions_kb, confirm_kb
+from keyboards.admin_keyboard import (users_actions_kb,
+                                      confirm_kb)
 from services import BACK_BUTTON
-from services.add_back_button import add_only_back_button
 from settings.middlewares import logger
 
 USER_NOT_FOUND_MSG = "❌ Пользователь не найден"
@@ -22,7 +25,9 @@ class UserSearch(StatesGroup):
     waiting_for_query = State()
     waiting_for_id = State()
     waiting_for_ban_confirmation = State()
+    waiting_for_ban_reason = State()
     waiting_for_unban_confirmation = State()
+    waiting_for_unban_reason = State()
     waiting_for_message = State()
 
 
@@ -68,7 +73,7 @@ async def process_user_id(
         if not user:
             await message.answer(
                 USER_NOT_FOUND_MSG,
-                reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:found_user")
+                reply_markup=BACK_BUTTON
             )
             logger.debug(USER_NOT_FOUND_MSG)
             return
@@ -87,7 +92,7 @@ async def process_user_id(
     except ValueError:
         await message.answer(
             "❌ ID должен быть числом. Попробуйте еще раз:",
-            reply_markup=add_only_back_button(text="← Отмена", callback_data="admin:found_user")
+            reply_markup=BACK_BUTTON
         )
 
 
@@ -138,31 +143,43 @@ async def request_to_ban_user(
     data = await state.get_data()
     user_id = data.get("user_id")
 
-    await state.update_data(user=user_id)
+    await state.update_data(user_id=user_id)
 
     await callback.message.answer(
-        "Вы уверены, что хотите забанить этого пользователя?",
+        "📝 Введите причину бана (макс. 200 символов):",
+        reply_markup=BACK_BUTTON
+    )
+
+    await state.set_state(UserSearch.waiting_for_ban_reason)
+
+
+@auxiliary_router.message(UserSearch.waiting_for_ban_reason)
+async def process_ban_reason(
+        message: Message,
+        state: FSMContext,
+):
+    """Processing the reason for the ban and requesting confirmation"""
+    reason = message.text.strip()
+
+    if len(reason) > 200:
+        await message.answer(
+            "Базар укороти.\n"
+            "Попробуй ещё раз.",
+            reply_markup=BACK_BUTTON
+        )
+        return
+
+    await state.update_data(ban_reason=reason)
+    data = await state.get_data()
+
+    await message.answer(
+        f"⚠️ Подтвердите бан пользователя:\n\n"
+        f"ID: {data['user_id']}\n"
+        f"Причина: {reason}",
         reply_markup=confirm_kb()
     )
 
     await state.set_state(UserSearch.waiting_for_ban_confirmation)
-
-
-@auxiliary_router.callback_query(F.data == "admin:user_unban")
-async def request_to_unban_user(
-        callback: CallbackQuery,
-        state: FSMContext
-):
-    """Unban user by ID or Username"""
-    await callback.answer()
-    data = await state.get_data()
-    user_id = data.get("user_id")
-
-    await callback.message.answer(
-        "Вы уверены, что хотите разбанить этого пользователя?",
-        reply_markup=confirm_kb()
-    )
-    await state.set_state(UserSearch.waiting_for_unban_confirmation)
 
 
 @auxiliary_router.callback_query(F.data.startswith("admin:confirm_yes"), UserSearch.waiting_for_ban_confirmation)
@@ -172,20 +189,31 @@ async def confirm_ban_user(
         session: AsyncSession,
         bot: Bot
 ):
+    """Confirmation of ban with recording in BanRecord"""
     data = await state.get_data()
     user_id = data.get("user_id")
+    reason = data.get("ban_reason", "Причина не указана")
+    admin_id = callback.from_user.id
 
     try:
-        await bun_user(session, user_id)
+        await bun_user(
+            session=session,
+            user_id=user_id,
+            ban_reason=reason,
+            banned_by=admin_id
+        )
+
         await callback.message.answer(
-            f"✅ Пользователь с ID {user_id} успешно забанен",
+            f"✅ Пользователь с ID {user_id} успешно забанен\n"
+            f"Причина: {reason}",
             reply_markup=BACK_BUTTON
         )
 
         try:
             await bot.send_message(
                 user_id,
-                "⛔ Вы были забанены администратором.\n"
+                f"⛔ Вы были забанены администратором.\n"
+                f"Причина: {reason}\n\n"
                 "Для выяснения причин обратитесь к администрации."
             )
         except Exception as e:
@@ -201,6 +229,56 @@ async def confirm_ban_user(
         await state.clear()
 
 
+@auxiliary_router.callback_query(F.data == "admin:user_unban")
+async def request_to_unban_user(
+        callback: CallbackQuery,
+        state: FSMContext
+):
+    """Unban user by ID or Username"""
+    await callback.answer()
+    data = await state.get_data()
+    user_id = data.get("user_id")
+
+    await state.update_data(user_id=user_id)
+
+    await callback.message.answer(
+        "📝 Введите причину ан-бана (макс. 200 символов):",
+        reply_markup=BACK_BUTTON
+    )
+
+    await state.set_state(UserSearch.waiting_for_unban_reason)
+
+
+@auxiliary_router.message(UserSearch.waiting_for_unban_reason)
+async def process_unban_reason(
+        message: Message,
+        state: FSMContext
+
+):
+    """Processing the reason for the unban and requesting confirmation"""
+    reason = message.text.strip()
+
+    if len(reason) > 200:
+        await message.answer(
+            "Базар укороти.\n"
+            "Попробуй ещё раз.",
+            reply_markup=BACK_BUTTON
+        )
+        return
+
+    await state.update_data(unban_reason=reason)
+    data = await state.get_data()
+
+    await message.answer(
+        f"⚠️ Подтвердите ан-бан пользователя:\n\n"
+        f"ID: {data['user_id']}\n"
+        f"Причина: {reason}",
+        reply_markup=confirm_kb()
+    )
+
+    await state.set_state(UserSearch.waiting_for_unban_confirmation)
+
+
 @auxiliary_router.callback_query(F.data.startswith("admin:confirm_yes"), UserSearch.waiting_for_unban_confirmation)
 async def confirm_unban_user(
         callback: CallbackQuery,
@@ -208,28 +286,40 @@ async def confirm_unban_user(
         session: AsyncSession,
         bot: Bot
 ):
+    """Confirmation of unban with recording in BanRecord"""
     data = await state.get_data()
     user_id = data.get("user_id")
+    reason = data.get("unban_reason", "Причина не указана")
+    admin_id = callback.from_user.id
 
     try:
-        await unban_user(session, user_id)
+        await unban_user(
+            session=session,
+            user_id=user_id,
+            unbanned_by=admin_id,
+            unban_reason=reason
+        )
+
         await callback.message.answer(
-            f"✅ Пользователь с ID {user_id} успешно разбанен",
+            f"✅ Пользователь с ID {user_id} успешно разабанен\n"
+            f"Причина: {reason}",
             reply_markup=BACK_BUTTON
         )
 
         try:
             await bot.send_message(
                 user_id,
-                "✅ Вы были разбанены администратором."
+                f"✅ Вы были разабанены администратором.\n"
+                f"Причина: {reason}"
             )
+
         except Exception as e:
             logger.error(f"Не удалось отправить уведомление пользователю {user_id}: {e}")
 
     except Exception as e:
-        logger.error(f"Ошибка при разбане пользователя {user_id}: {e}")
+        logger.error(f"Ошибка при ан-бане пользователя {user_id}: {e}")
         await callback.message.answer(
-            f"❌ Не удалось разабанить пользователя: {e}",
+            f"❌ Не удалось ан-банить пользователя: {e}",
             reply_markup=BACK_BUTTON
         )
     finally:
