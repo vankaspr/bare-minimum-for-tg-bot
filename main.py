@@ -12,6 +12,7 @@ from utilities import set_commands
 async def init_database():
     try:
         async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
         logger.info("✅ Таблицы БД успешно созданы/проверены")
     except Exception as e:
