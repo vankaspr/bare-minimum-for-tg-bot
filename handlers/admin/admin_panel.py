@@ -1,8 +1,9 @@
 """
     Handler for command --> /admin ✅
     Handler for callback --> admin:admin ✅
-    Handler for callback --> admin:users
-                                --> admin:active_ban
+    Handler for callback --> admin:users ✅
+                                --> admin:active_ban ✅
+                                --> admin:active_ban_list ✅
                                 --> admin:found_user ✅
                                     --> admin:user_ban ✅
                                     --> admin:user_unban ✅
@@ -14,11 +15,15 @@
 
 import html
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from database.crud import get_active_ban_count, get_active_bans_list
 from filters.is_admin import AdminFilter
 from keyboards import admin_kb, users_kb
 from keyboards.admin_keyboard import search_user_kb
-from services import BACK_BUTTON
+from services import BACK_BUTTON, add_back_to_admin_button
+from services.format_ban import format_ban_list
 from settings.middlewares import logger
 from config import admin
 from utilities.error_logs import get_error_logs
@@ -64,9 +69,40 @@ async def found_user(callback: CallbackQuery):
 
 
 @admin_router.callback_query(F.data == "admin:active_ban")
-async def get_active_ban(callback: CallbackQuery):
+async def get_active_ban(
+        callback: CallbackQuery,
+        session: AsyncSession
+):
     await callback.answer()
-    await callback.message.answer("Тут мы смотрим кого забанили")
+    ban_count = await get_active_ban_count(session)
+
+    list_button = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Посмотреть список банов",
+                                  callback_data="admin:active_ban_list")]
+        ]
+    )
+    await callback.message.answer(
+        f"🔢 Активных банов: <b>{ban_count}</b>\n",
+        parse_mode="HTML",
+        reply_markup=add_back_to_admin_button(list_button)
+    )
+
+
+@admin_router.callback_query(F.data == "admin:active_ban_list")
+async def show_first_ban_page(
+        callback: CallbackQuery,
+        session: AsyncSession
+):
+    await callback.answer()
+
+    ban_list = await get_active_bans_list(session)
+
+
+    await callback.message.answer(
+        format_ban_list(ban_list),
+        reply_markup=BACK_BUTTON
+    )
 
 
 # --- Системные функции ---
