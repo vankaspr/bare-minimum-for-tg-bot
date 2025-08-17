@@ -2,14 +2,12 @@ from datetime import datetime
 from aiogram.filters import BaseFilter
 from aiogram.types import Message, CallbackQuery
 from typing import Union, Dict
-from settings.middlewares import logger
+from middlewares import logger
 
 
 class AdminFilter(BaseFilter):
     def __init__(
-            self,
-            admin_ids: Union[int, list[int], Dict[int, str]],
-            max_attempts: int = 3
+        self, admin_ids: Union[int, list[int], Dict[int, str]], max_attempts: int = 3
     ):
         """
         :param admin_ids: ID админов (int, list[int] или dict[id, имя])
@@ -29,23 +27,23 @@ class AdminFilter(BaseFilter):
         user = update.from_user
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-
         if user.id in self.admin_ids:
-            logger.info(f"Доступ разрешён для администратора {user.id} ({user.username})")
+            logger.info(
+                f"Доступ разрешён для администратора {user.id} ({user.username})"
+            )
             return True
-
 
         self._log_access_attempt(user, current_time)
 
-
         if self._check_access_attempts(user.id):
-            logger.warning(f"Блокировка доступа для пользователя {user.id} - превышено кол-во попыток")
+            logger.warning(
+                f"Блокировка доступа для пользователя {user.id} - превышено кол-во попыток"
+            )
             if isinstance(update, CallbackQuery):
                 await update.answer("🚫 Доступ заблокирован!", show_alert=True)
             else:
                 await update.answer("⚠️ Доступ к этой команде заблокирован")
             return False
-
 
         if isinstance(update, CallbackQuery):
             await update.answer("🔐 Доступ запрещён", show_alert=True)
@@ -55,12 +53,14 @@ class AdminFilter(BaseFilter):
 
     def _log_access_attempt(self, user, timestamp):
         attempt_info = {
-            'user_id': user.id,
-            'username': user.username,
-            'timestamp': timestamp
+            "user_id": user.id,
+            "username": user.username,
+            "timestamp": timestamp,
         }
 
-        logger.warning(f"Попытка доступа неавторизованного пользователя: {attempt_info}")
+        logger.warning(
+            f"Попытка доступа неавторизованного пользователя: {attempt_info}"
+        )
 
         if user.id not in self.access_attempts:
             self.access_attempts[user.id] = []
@@ -72,8 +72,12 @@ class AdminFilter(BaseFilter):
 
         current_time = datetime.now()
         self.access_attempts[user_id] = [
-            t for t in self.access_attempts[user_id]
-            if (current_time - datetime.strptime(t, "%Y-%m-%d %H:%M:%S")).total_seconds() < 3600
+            t
+            for t in self.access_attempts[user_id]
+            if (
+                current_time - datetime.strptime(t, "%Y-%m-%d %H:%M:%S")
+            ).total_seconds()
+            < 3600
         ]
 
         return len(self.access_attempts[user_id]) >= self.max_attempts

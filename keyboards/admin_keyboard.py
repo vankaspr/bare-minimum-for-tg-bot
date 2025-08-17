@@ -1,5 +1,5 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from services import add_back_to_home_button, add_back_to_admin_button, BACK_BUTTON
+from services import add_back_to_home_button, add_back_to_admin_button
 
 
 def admin_kb():
@@ -7,7 +7,11 @@ def admin_kb():
         inline_keyboard=[
             [InlineKeyboardButton(text="🔨 Пользователи", callback_data="admin:users")],
             [InlineKeyboardButton(text="📢 Рассылка", callback_data="admin:broadcast")],
-            [InlineKeyboardButton(text="🚨 Логи ошибок", callback_data="admin:error_logs")],
+            [
+                InlineKeyboardButton(
+                    text="🚨 Логи ошибок", callback_data="admin:error_logs"
+                )
+            ],
             [InlineKeyboardButton(text="💰 Платежи", callback_data="admin:payments")],
         ]
     )
@@ -19,11 +23,15 @@ def users_kb():
     menu = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text="🔍 Найти гада", callback_data="admin:found_user"),
+                InlineKeyboardButton(
+                    text="🔍 Найти гада", callback_data="admin:found_user"
+                ),
             ],
             [
-                InlineKeyboardButton(text="⚠️ Активные баны", callback_data="admin:active_ban"),
-            ]
+                InlineKeyboardButton(
+                    text="⚠️ Активные баны", callback_data="admin:active_ban"
+                ),
+            ],
         ]
     )
 
@@ -34,7 +42,11 @@ def search_user_kb():
     menu = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="По ID", callback_data="admin:search_by_id")],
-            [InlineKeyboardButton(text="По Username", callback_data="admin:search_by_username")]
+            [
+                InlineKeyboardButton(
+                    text="По Username", callback_data="admin:search_by_username"
+                )
+            ],
         ]
     )
 

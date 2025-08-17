@@ -1,6 +1,7 @@
 from pathlib import Path
 import aiofiles
-from settings.middlewares import logger
+from middlewares import logger
+
 
 def get_filtered_logs(logs: list[str]) -> list[str]:
     """Returns only logs with levels ERROR, WARNING or DEBUG."""

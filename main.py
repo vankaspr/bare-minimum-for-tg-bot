@@ -2,10 +2,12 @@ import asyncio
 from database import engine, Base
 from handlers.admin import admin_router, auxiliary_router
 from handlers.users import router, support_router
+from middlewares.ban import BanMiddleware
+
 from settings import dp, bot
-from settings.middlewares import logger
-from settings.middlewares.ban import BanMiddleware
-from settings.middlewares.db_session_middleware import DBSessionMiddleware
+from middlewares import logger
+
+from middlewares.db_session_middleware import DBSessionMiddleware
 from utilities import set_commands
 
 
@@ -21,7 +23,6 @@ async def init_database():
 
 
 async def main():
-
     await init_database()
 
     dp.update.middleware(DBSessionMiddleware())

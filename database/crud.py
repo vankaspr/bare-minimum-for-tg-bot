@@ -3,25 +3,18 @@ from sqlalchemy import select, update, and_, func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import User, BanRecord
-from settings.middlewares import logger
+from middlewares import logger
 from datetime import datetime, timezone
 
 
-async def get_or_create_user(
-        session: AsyncSession,
-        telegram_user
-) -> User:
+async def get_or_create_user(session: AsyncSession, telegram_user) -> User:
     try:
-        result = await session.execute(
-            select(User).where(User.id == telegram_user.id)
-        )
+        result = await session.execute(select(User).where(User.id == telegram_user.id))
         user = result.scalar_one_or_none()
 
         if user is None:
             user = User(
-                id=telegram_user.id,
-                username=telegram_user.username,
-                is_banned=False
+                id=telegram_user.id, username=telegram_user.username, is_banned=False
             )
             session.add(user)
             await session.commit()
@@ -34,10 +27,7 @@ async def get_or_create_user(
         raise  # Или вернуть None, если это допустимо
 
 
-async def get_user_by_id(
-        session: AsyncSession,
-        user_id: int
-) -> Optional[User]:
+async def get_user_by_id(session: AsyncSession, user_id: int) -> Optional[User]:
     try:
         query = select(User).where(User.id == user_id)
         result = await session.execute(query)
@@ -47,10 +37,7 @@ async def get_user_by_id(
         return None
 
 
-async def get_user_by_username(
-        session: AsyncSession,
-        username: str
-) -> Optional[User]:
+async def get_user_by_username(session: AsyncSession, username: str) -> Optional[User]:
     try:
         query = select(User).where(User.username == username)
         result = await session.execute(query)
@@ -61,10 +48,10 @@ async def get_user_by_username(
 
 
 async def bun_user(
-        session: AsyncSession,
-        user_id: int,
-        ban_reason: str = "Причина не указана",
-        banned_by: int | None = None
+    session: AsyncSession,
+    user_id: int,
+    ban_reason: str = "Причина не указана",
+    banned_by: int | None = None,
 ) -> None:
     """ban user by ID"""
     user = await get_user_by_id(session, user_id)
@@ -81,7 +68,7 @@ async def bun_user(
         is_active=True,
         unban_date=None,  # Явно указываем None для новых банов
         unbanned_by=None,
-        unban_reason=None
+        unban_reason=None,
     )
 
     session.add(ban_record)
@@ -89,10 +76,10 @@ async def bun_user(
 
 
 async def unban_user(
-        session: AsyncSession,
-        user_id: int,
-        unbanned_by: int | None = None,
-        unban_reason: str = "Причина не указана",
+    session: AsyncSession,
+    user_id: int,
+    unbanned_by: int | None = None,
+    unban_reason: str = "Причина не указана",
 ) -> None:
     """unban user by ID"""
     user = await get_user_by_id(session, user_id)
@@ -107,14 +94,14 @@ async def unban_user(
         .where(
             and_(
                 BanRecord.user_id == user_id,
-                BanRecord.is_active.is_(True)  # Используем is_() для булевых значений
+                BanRecord.is_active.is_(True),  # Используем is_() для булевых значений
             )
         )
         .values(
             is_active=False,
             unbanned_by=unbanned_by,
             unban_date=datetime.now(timezone.utc),
-            unban_reason=unban_reason
+            unban_reason=unban_reason,
         )
     )
 
@@ -125,9 +112,7 @@ async def unban_user(
 async def get_active_ban_count(session: AsyncSession) -> int:
     """Returns the number of active bans"""
     stmt = (
-        select(func.count())
-        .select_from(BanRecord)
-        .where(BanRecord.is_active == True)
+        select(func.count()).select_from(BanRecord).where(BanRecord.is_active == True)
     )
     result = await session.execute(stmt)
     return result.scalar_one_or_none() or 0
@@ -136,9 +121,7 @@ async def get_active_ban_count(session: AsyncSession) -> int:
 async def get_active_bans_list(session: AsyncSession) -> list[tuple[BanRecord, str]]:
     """Returns a list of active bans with username"""
     stmt = (
-        select(
-            BanRecord, User.username
-        )
+        select(BanRecord, User.username)
         .join(User, BanRecord.user_id == User.id)
         .where(BanRecord.is_active == True)
         .order_by(BanRecord.ban_date.desc())

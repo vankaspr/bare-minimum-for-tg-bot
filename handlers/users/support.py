@@ -1,6 +1,6 @@
 """
-    Handler for command --> /support
-    Handler for callback --> menu:support
+Handler for command --> /support
+Handler for callback --> menu:support
 """
 
 from typing import Union
@@ -9,12 +9,13 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
 
-from filters.ban_check import BannedUserFilter
+from filters import BannedUserFilter
 from services import process_support_message, add_only_back_button
 
 support_router = Router()
 support_router.message.filter(BannedUserFilter())
 support_router.callback_query.filter(BannedUserFilter())
+
 
 class SupportForm(StatesGroup):
     waiting_for_issue = State()
@@ -23,8 +24,7 @@ class SupportForm(StatesGroup):
 @support_router.message(F.text.lower() == "/support")
 @support_router.callback_query(F.data == "menu:support")
 async def cmd_process_support_request(
-        event: Union[Message, CallbackQuery],
-        state: FSMContext
+    event: Union[Message, CallbackQuery], state: FSMContext
 ):
     """Handle /support command"""
     if isinstance(event, CallbackQuery):
@@ -36,14 +36,16 @@ async def cmd_process_support_request(
     await state.set_state(SupportForm.waiting_for_issue)
     await message.answer(
         "Опишите вашу проблему в одном сообщении.",
-        reply_markup=add_only_back_button(text="← Назад в меню", callback_data="menu:home")
+        reply_markup=add_only_back_button(
+            text="← Назад в меню", callback_data="menu:home"
+        ),
     )
 
 
 @support_router.message(F.text, SupportForm.waiting_for_issue)
 async def process_support(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     await process_support_message(message)
     await state.clear()

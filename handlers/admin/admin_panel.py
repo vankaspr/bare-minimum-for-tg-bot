@@ -1,30 +1,36 @@
 """
-    Handler for command --> /admin ✅
-    Handler for callback --> admin:admin ✅
-    Handler for callback --> admin:users ✅
-                                --> admin:active_ban ✅
-                                --> admin:active_ban_list ✅
-                                --> admin:found_user ✅
-                                    --> admin:user_ban ✅
-                                    --> admin:user_unban ✅
-                                    --> admin:user_mes ✅
-    Handler for callback --> admin:error_logs ✅
-    Handler for callback --> admin:payments
-    Handler for callback --> admin:broadcast
+Handler for command --> /admin ✅
+Handler for callback --> admin:admin ✅
+Handler for callback --> admin:users ✅
+                            --> admin:active_ban ✅
+                            --> admin:active_ban_list ✅
+                            --> admin:found_user ✅
+                                --> admin:user_ban ✅
+                                --> admin:user_unban ✅
+                                --> admin:user_mes ✅
+Handler for callback --> admin:error_logs ✅
+Handler for callback --> admin:payments
+Handler for callback --> admin:broadcast
 """
 
 import html
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import (
+    Message,
+    CallbackQuery,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.crud import get_active_ban_count, get_active_bans_list
+
 from filters.is_admin import AdminFilter
 from keyboards import admin_kb, users_kb
 from keyboards.admin_keyboard import search_user_kb
 from services import BACK_BUTTON, add_back_to_admin_button
 from services.format_ban import format_ban_list
-from settings.middlewares import logger
+from middlewares import logger
 from config import admin
 from utilities.error_logs import get_error_logs
 
@@ -54,8 +60,7 @@ async def get_admin_users(callback: CallbackQuery):
     await callback.answer()
     logger.info("Получении раздела о пользователях с колбэка")
     await callback.message.answer(
-        "🛠 Управление пользователями",
-        reply_markup=users_kb()
+        "🛠 Управление пользователями", reply_markup=users_kb()
     )
 
 
@@ -63,46 +68,39 @@ async def get_admin_users(callback: CallbackQuery):
 async def found_user(callback: CallbackQuery):
     await callback.answer()
     await callback.message.answer(
-        "🔍 Выберите способ поиска:",
-        reply_markup=search_user_kb()
+        "🔍 Выберите способ поиска:", reply_markup=search_user_kb()
     )
 
 
 @admin_router.callback_query(F.data == "admin:active_ban")
-async def get_active_ban(
-        callback: CallbackQuery,
-        session: AsyncSession
-):
+async def get_active_ban(callback: CallbackQuery, session: AsyncSession):
     await callback.answer()
     ban_count = await get_active_ban_count(session)
 
     list_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="Посмотреть список банов",
-                                  callback_data="admin:active_ban_list")]
+            [
+                InlineKeyboardButton(
+                    text="Посмотреть список банов",
+                    callback_data="admin:active_ban_list",
+                )
+            ]
         ]
     )
     await callback.message.answer(
         f"🔢 Активных банов: <b>{ban_count}</b>\n",
         parse_mode="HTML",
-        reply_markup=add_back_to_admin_button(list_button)
+        reply_markup=add_back_to_admin_button(list_button),
     )
 
 
 @admin_router.callback_query(F.data == "admin:active_ban_list")
-async def show_first_ban_page(
-        callback: CallbackQuery,
-        session: AsyncSession
-):
+async def show_first_ban_page(callback: CallbackQuery, session: AsyncSession):
     await callback.answer()
 
     ban_list = await get_active_bans_list(session)
 
-
-    await callback.message.answer(
-        format_ban_list(ban_list),
-        reply_markup=BACK_BUTTON
-    )
+    await callback.message.answer(format_ban_list(ban_list), reply_markup=BACK_BUTTON)
 
 
 # --- Системные функции ---
@@ -120,10 +118,9 @@ async def get_admin_logs(callback: CallbackQuery):
     safe_logs = html.escape(logs)
 
     await callback.message.answer(
-        f"<b>Последние ошибки:</b>\n"
-        f"<pre>{safe_logs}</pre>",
+        f"<b>Последние ошибки:</b>\n" f"<pre>{safe_logs}</pre>",
         parse_mode="HTML",
-        reply_markup=BACK_BUTTON
+        reply_markup=BACK_BUTTON,
     )
 
 
@@ -133,8 +130,7 @@ async def get_admin_payments(callback: CallbackQuery):
     await callback.answer()
     logger.info("Получении информации о платежах с колбэка")
     await callback.message.answer(
-        "Здесь будет лежать инфа о платежах"
-        "На случай если я включу платежи",
+        "Здесь будет лежать инфа о платежах" "На случай если я включу платежи",
     )
 
 

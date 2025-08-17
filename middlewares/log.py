@@ -10,15 +10,15 @@ except ImportError:
 
 class LoggingSettings:
     def __init__(
-            self,
-            name: str = "YoBa",
-            log_file: str = "logs/bot.log",
-            console_level: str = "INFO",
-            file_level: str = "DEBUG",
-            max_bytes: int = 5 * 1024 * 1024,
-            backup_count: int = 3,
-            fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
+        self,
+        name: str = "YoBa",
+        log_file: str = "logs/bot.log",
+        console_level: str = "INFO",
+        file_level: str = "DEBUG",
+        max_bytes: int = 5 * 1024 * 1024,
+        backup_count: int = 3,
+        fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
     ):
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
@@ -34,13 +34,13 @@ class LoggingSettings:
                 datefmt=datefmt,
                 reset=True,
                 log_colors={
-                    'DEBUG': 'cyan',
-                    'INFO': 'green',
-                    'WARNING': 'yellow',
-                    'ERROR': 'red',
-                    'CRITICAL': 'red,bg_white',
+                    "DEBUG": "cyan",
+                    "INFO": "green",
+                    "WARNING": "yellow",
+                    "ERROR": "red",
+                    "CRITICAL": "red,bg_white",
                 },
-                style='%'
+                style="%",
             )
         else:
             self._console_formatter = self._file_formatter
@@ -50,17 +50,16 @@ class LoggingSettings:
             self.logger.handlers.clear()
 
         self.logger.addHandler(self._setup_console_handler(console_level))
-        self.logger.addHandler(self._setup_file_handler(
-            log_file,
-            file_level,
-            max_bytes,
-            backup_count,
-        ))
+        self.logger.addHandler(
+            self._setup_file_handler(
+                log_file,
+                file_level,
+                max_bytes,
+                backup_count,
+            )
+        )
 
-    def _setup_console_handler(
-            self,
-            level: str
-    ) -> logging.StreamHandler:
+    def _setup_console_handler(self, level: str) -> logging.StreamHandler:
         """Coloring console log"""
         handler = logging.StreamHandler(sys.stderr)
         handler.setLevel(getattr(logging, level.upper()))
@@ -68,15 +67,16 @@ class LoggingSettings:
         return handler
 
     def _setup_file_handler(
-            self,
-            log_file: str,
-            level: str,
-            max_bytes: int,
-            backup_count: int,
+        self,
+        log_file: str,
+        level: str,
+        max_bytes: int,
+        backup_count: int,
     ) -> RotatingFileHandler:
         """Rotating setting for log-file"""
         # Создаём директорию, если её нет
         import os
+
         os.makedirs(os.path.dirname(log_file), exist_ok=True)
 
         handler = RotatingFileHandler(
