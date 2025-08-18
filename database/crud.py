@@ -48,10 +48,10 @@ async def get_user_by_username(session: AsyncSession, username: str) -> Optional
 
 
 async def bun_user(
-    session: AsyncSession,
-    user_id: int,
-    ban_reason: str = "Причина не указана",
-    banned_by: int | None = None,
+        session: AsyncSession,
+        user_id: int,
+        ban_reason: str = "Причина не указана",
+        banned_by: int | None = None,
 ) -> None:
     """ban user by ID"""
     user = await get_user_by_id(session, user_id)
@@ -76,10 +76,10 @@ async def bun_user(
 
 
 async def unban_user(
-    session: AsyncSession,
-    user_id: int,
-    unbanned_by: int | None = None,
-    unban_reason: str = "Причина не указана",
+        session: AsyncSession,
+        user_id: int,
+        unbanned_by: int | None = None,
+        unban_reason: str = "Причина не указана",
 ) -> None:
     """unban user by ID"""
     user = await get_user_by_id(session, user_id)
@@ -128,3 +128,17 @@ async def get_active_bans_list(session: AsyncSession) -> list[tuple[BanRecord, s
     )
     result = await session.execute(stmt)
     return result.all()
+
+
+async def get_all_active_user_ids(
+        session: AsyncSession
+) -> list[int]:
+    """returns the list of IDs of all active (not banned) users"""
+    try:
+        query = select(User.id).where(User.is_banned == False)
+        result = await session.execute(query)
+        return result.scalars().all()
+
+    except SQLAlchemyError as e:
+        logger.error(f"Ошибка при получении ID активных пользователей: {e}")
+        return []
