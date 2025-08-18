@@ -8,7 +8,7 @@ from database import Base
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String, nullable=True)
     is_banned = Column(Boolean, nullable=False)
     join_date = Column(
