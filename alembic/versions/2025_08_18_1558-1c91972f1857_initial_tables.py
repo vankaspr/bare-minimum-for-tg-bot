@@ -24,12 +24,16 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
         sa.Column("username", sa.String(), nullable=True),
         sa.Column("is_banned", sa.Boolean(), nullable=False, server_default=sa.false()),
-        sa.Column("join_date", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column(
+            "join_date", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
     )
     op.create_table(
         "bans",
         sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
-        sa.Column("user_id", sa.Integer(), sa.ForeignKey("users.id", ondelete="CASCADE")),
+        sa.Column(
+            "user_id", sa.Integer(), sa.ForeignKey("users.id", ondelete="CASCADE")
+        ),
         sa.Column("ban_reason", sa.String(200), nullable=True),
         sa.Column("banned_by", sa.Integer(), nullable=True),
         sa.Column("ban_date", sa.DateTime(timezone=True), server_default=sa.func.now()),
@@ -38,7 +42,6 @@ def upgrade() -> None:
         sa.Column("unban_date", sa.DateTime(timezone=True), nullable=True),
         sa.Column("unban_reason", sa.String(200), nullable=True),
     )
-
 
 
 def downgrade() -> None:

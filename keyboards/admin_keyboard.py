@@ -75,12 +75,17 @@ def confirm_kb():
     )
     return add_back_to_admin_button(menu)
 
+
 def confirm_broadcast_kb():
     menu = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text="✅ Да", callback_data="broadcast:confirm_yes"),
-                InlineKeyboardButton(text="❌ Отменить", callback_data="broadcast:cancel")
+                InlineKeyboardButton(
+                    text="✅ Да", callback_data="broadcast:confirm_yes"
+                ),
+                InlineKeyboardButton(
+                    text="❌ Отменить", callback_data="broadcast:cancel"
+                ),
             ]
         ]
     )

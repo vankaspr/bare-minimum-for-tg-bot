@@ -4,10 +4,7 @@ from middlewares import logger
 
 
 async def broadcast_message_to_users(
-        bot: Bot,
-        user_ids: list[int],
-        text: str,
-        parse_mode: str = "HTML"
+    bot: Bot, user_ids: list[int], text: str, parse_mode: str = "HTML"
 ) -> tuple[int, int]:
     """
     Makes a message sent to a list of users.
@@ -19,11 +16,7 @@ async def broadcast_message_to_users(
 
     for user_id in user_ids:
         try:
-            await bot.send_message(
-                chat_id=user_id,
-                text=text,
-                parse_mode=parse_mode
-            )
+            await bot.send_message(chat_id=user_id, text=text, parse_mode=parse_mode)
             sent_count += 1
 
         except Exception as e:

@@ -1,6 +1,7 @@
 """
 Handler for command --> /start
 Handler for callback --> menu:home
+Handler for callback --> /help
 """
 
 from aiogram import Router, F
@@ -14,7 +15,6 @@ from keyboards import menu_kb
 from services import add_only_back_button
 from middlewares import logger
 
-
 router = Router()
 router.message.filter(BannedUserFilter())
 router.callback_query.filter(BannedUserFilter())
@@ -24,9 +24,11 @@ router.callback_query.filter(BannedUserFilter())
 async def cmd_start(message: Message, session: AsyncSession):
     """Main menu"""
     user = await get_or_create_user(session, message.from_user)
-    sms = "Всем велком -_-"
+    sms = "Йо, шалупыга!\n\n" "<b>Я - Йоба</b>"
     logger.debug(f"Привет, {user.username or user.id}! Ты добавлен в базу данных.")
-    await message.answer(sms, reply_markup=menu_kb(message.from_user.id))
+    await message.answer(
+        sms, reply_markup=menu_kb(message.from_user.id), parse_mode="HTML"
+    )
 
 
 @router.callback_query(F.data == "menu:home")

@@ -25,12 +25,14 @@ from aiogram.types import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.crud import (get_active_ban_count,
-                           get_active_bans_list, get_all_active_user_ids)
+from database.crud import (
+    get_active_ban_count,
+    get_active_bans_list,
+    get_all_active_user_ids,
+)
 from filters.is_admin import AdminFilter
 from keyboards import admin_kb, users_kb
-from keyboards.admin_keyboard import (search_user_kb,
-                                      confirm_broadcast_kb)
+from keyboards.admin_keyboard import search_user_kb, confirm_broadcast_kb
 from services import BACK_BUTTON, add_back_to_admin_button
 from services.broadcast import broadcast_message_to_users
 from services.format_ban import format_ban_list
@@ -144,13 +146,9 @@ class BroadcastStates(StatesGroup):
 
 
 @admin_router.callback_query(F.data == "admin:broadcast")
-async def get_admin_broadcast(
-        callback: CallbackQuery,
-        state: FSMContext
-):
+async def get_admin_broadcast(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(
-        "📢 Введите сообщение для рассылки:",
-        reply_markup=BACK_BUTTON
+        "📢 Введите сообщение для рассылки:", reply_markup=BACK_BUTTON
     )
 
     await state.set_state(BroadcastStates.waiting_message)
@@ -158,29 +156,27 @@ async def get_admin_broadcast(
 
 @admin_router.message(BroadcastStates.waiting_message)
 async def process_broadcast_message(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     await state.update_data(
-        broadcast_message=message.html_text,
-        message_id=message.message_id
+        broadcast_message=message.html_text, message_id=message.message_id
     )
 
     await message.answer(
         f"Подтвердите рассылку этого сообщения:\n\n{message.html_text}",
         reply_markup=confirm_broadcast_kb(),
-        parse_mode="HTML"
+        parse_mode="HTML",
     )
 
     await state.set_state(BroadcastStates.confirmation)
 
 
-@admin_router.callback_query(BroadcastStates.confirmation, F.data == "broadcast:confirm_yes")
+@admin_router.callback_query(
+    BroadcastStates.confirmation, F.data == "broadcast:confirm_yes"
+)
 async def confirm_broadcast(
-        callback: CallbackQuery,
-        state: FSMContext,
-        session: AsyncSession,
-        bot: Bot
+    callback: CallbackQuery, state: FSMContext, session: AsyncSession, bot: Bot
 ):
     try:
         data = await state.get_data()
@@ -188,23 +184,19 @@ async def confirm_broadcast(
 
         users_id = await get_all_active_user_ids(session)
         sent_count, failed_count = await broadcast_message_to_users(
-            bot=bot,
-            user_ids=users_id,
-            text=broadcast_message
+            bot=bot, user_ids=users_id, text=broadcast_message
         )
 
         await callback.message.edit_text(
             f"📢 Рассылка завершена!\n\n"
             f"✅ Успешно: {sent_count}\n"
             f"❌ Ошибки: {failed_count}",
-            reply_markup=BACK_BUTTON
-
+            reply_markup=BACK_BUTTON,
         )
     except Exception as e:
         logger.error(f"Не удалось разослать рассылку: {e}")
         await callback.message.answer(
-            "Что-то пошло не так. Рассылка не удалась",
-            reply_markup=BACK_BUTTON
+            "Что-то пошло не так. Рассылка не удалась", reply_markup=BACK_BUTTON
         )
     finally:
         await state.clear()
@@ -212,11 +204,8 @@ async def confirm_broadcast(
 
 @admin_router.callback_query(F.data == "broadcast:cancel")
 async def cancel_broadcast(
-        callback: CallbackQuery,
-        state: FSMContext,
+    callback: CallbackQuery,
+    state: FSMContext,
 ):
     await state.clear()
-    await callback.message.edit_text(
-        "❌ Рассылка отменена",
-        reply_markup=BACK_BUTTON
-    )
+    await callback.message.edit_text("❌ Рассылка отменена", reply_markup=BACK_BUTTON)
