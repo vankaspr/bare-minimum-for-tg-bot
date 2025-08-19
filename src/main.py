@@ -1,5 +1,7 @@
 import asyncio
 import os
+import sys
+from pathlib import Path
 
 from config import DB_DIR
 from database import engine, Base
@@ -12,6 +14,9 @@ from core.middlewares import logger
 
 from core.middlewares.db_session_middleware import DBSessionMiddleware
 from core.utilities import set_commands
+
+
+sys.path.insert(0, str(Path(__file__).parent))
 
 
 async def init_database():
