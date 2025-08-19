@@ -6,7 +6,7 @@ from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import User
-from middlewares import logger
+from core.middlewares import logger
 
 
 class BannedUserFilter(BaseFilter):

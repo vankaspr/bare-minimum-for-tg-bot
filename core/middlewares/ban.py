@@ -1,7 +1,7 @@
 from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery
 from database.crud import get_user_by_id
-from middlewares import logger
+from core.middlewares import logger
 
 
 class BanMiddleware(BaseMiddleware):

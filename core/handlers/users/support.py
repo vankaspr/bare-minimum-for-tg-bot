@@ -9,8 +9,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
 
-from filters import BannedUserFilter
-from services import process_support_message, add_only_back_button
+from core.filters import BannedUserFilter
+from core.services import process_support_message, add_only_back_button
 
 support_router = Router()
 support_router.message.filter(BannedUserFilter())

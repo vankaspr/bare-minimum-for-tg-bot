@@ -1,6 +1,6 @@
 from pathlib import Path
 import aiofiles
-from middlewares import logger
+from core.middlewares import logger
 
 
 def get_filtered_logs(logs: list[str]) -> list[str]:

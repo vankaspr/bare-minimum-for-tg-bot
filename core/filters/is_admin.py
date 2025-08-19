@@ -2,7 +2,7 @@ from datetime import datetime
 from aiogram.filters import BaseFilter
 from aiogram.types import Message, CallbackQuery
 from typing import Union, Dict
-from middlewares import logger
+from core.middlewares import logger
 
 
 class AdminFilter(BaseFilter):

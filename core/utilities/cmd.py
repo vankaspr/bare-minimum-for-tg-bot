@@ -1,6 +1,6 @@
 from aiogram.types import BotCommand, BotCommandScopeDefault
 from settings import bot
-from middlewares import logger
+from core.middlewares import logger
 
 
 async def set_commands():

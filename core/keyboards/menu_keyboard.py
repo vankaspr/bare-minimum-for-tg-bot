@@ -1,8 +1,8 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from config import admin
-from middlewares import logger
-from filters import AdminFilter
+from core.middlewares import logger
+from core.filters import AdminFilter
 
 admin_filter = AdminFilter(admin_ids=[admin])
 

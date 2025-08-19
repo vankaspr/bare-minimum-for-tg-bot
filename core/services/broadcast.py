@@ -1,6 +1,6 @@
 from aiogram import Bot
 
-from middlewares import logger
+from core.middlewares import logger
 
 
 async def broadcast_message_to_users(

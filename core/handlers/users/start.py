@@ -10,10 +10,10 @@ from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.crud import get_or_create_user
-from filters import BannedUserFilter
-from keyboards import menu_kb
-from services import add_only_back_button
-from middlewares import logger
+from core.filters import BannedUserFilter
+from core.keyboards import menu_kb
+from core.services import add_only_back_button
+from core.middlewares import logger
 
 router = Router()
 router.message.filter(BannedUserFilter())

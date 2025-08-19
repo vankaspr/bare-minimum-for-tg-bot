@@ -3,7 +3,7 @@ from sqlalchemy import select, update, and_, func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import User, BanRecord
-from middlewares import logger
+from core.middlewares import logger
 from datetime import datetime, timezone
 
 

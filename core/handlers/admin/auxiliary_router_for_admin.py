@@ -4,11 +4,11 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 from config import admin
+from core.keyboards.admin_keyboard import users_actions_kb, confirm_kb
 from database.crud import get_user_by_id, get_user_by_username, bun_user, unban_user
-from filters import AdminFilter
-from keyboards.admin_keyboard import users_actions_kb, confirm_kb
-from services import BACK_BUTTON
-from middlewares import logger
+from core.filters import AdminFilter
+from core.services import BACK_BUTTON
+from core.middlewares import logger
 
 
 USER_NOT_FOUND_MSG = "❌ Пользователь не найден"

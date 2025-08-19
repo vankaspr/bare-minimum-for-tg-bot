@@ -25,20 +25,20 @@ from aiogram.types import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.keyboards.admin_keyboard import search_user_kb, confirm_broadcast_kb
 from database.crud import (
     get_active_ban_count,
     get_active_bans_list,
     get_all_active_user_ids,
 )
-from filters.is_admin import AdminFilter
-from keyboards import admin_kb, users_kb
-from keyboards.admin_keyboard import search_user_kb, confirm_broadcast_kb
-from services import BACK_BUTTON, add_back_to_admin_button
-from services.broadcast import broadcast_message_to_users
-from services.format_ban import format_ban_list
-from middlewares import logger
+from core.filters.is_admin import AdminFilter
+from core.keyboards import admin_kb, users_kb
+from core.services import BACK_BUTTON, add_back_to_admin_button
+from core.services.broadcast import broadcast_message_to_users
+from core.services.format_ban import format_ban_list
+from core.middlewares import logger
 from config import admin
-from utilities.error_logs import get_error_logs
+from core.utilities.error_logs import get_error_logs
 
 admin_router = Router()
 admin_router.callback_query.filter(AdminFilter(admin))

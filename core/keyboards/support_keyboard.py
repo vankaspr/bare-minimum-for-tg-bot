@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from services import add_back_to_home_button
+from core.services import add_back_to_home_button
 
 
 def support_kb():

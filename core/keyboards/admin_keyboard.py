@@ -1,5 +1,5 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from services import add_back_to_home_button, add_back_to_admin_button
+from core.services import add_back_to_home_button, add_back_to_admin_button
 
 
 def admin_kb():

@@ -1,14 +1,14 @@
 import asyncio
 from database import engine, Base
-from handlers.admin import admin_router, auxiliary_router
-from handlers.users import router, support_router
-from middlewares.ban import BanMiddleware
+from core.handlers.admin import admin_router, auxiliary_router
+from core.handlers.users import router, support_router
+from core.middlewares.ban import BanMiddleware
 
 from settings import dp, bot
-from middlewares import logger
+from core.middlewares import logger
 
-from middlewares.db_session_middleware import DBSessionMiddleware
-from utilities import set_commands
+from core.middlewares.db_session_middleware import DBSessionMiddleware
+from core.utilities import set_commands
 
 
 async def init_database():
