@@ -1,0 +1,37 @@
+from datetime import datetime, timezone
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
+from sqlalchemy.orm import relationship
+
+from src.database import Base
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String, nullable=True)
+    is_banned = Column(Boolean, nullable=False)
+    join_date = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+    bans = relationship("BanRecord", back_populates="user")
+
+
+class BanRecord(Base):
+    __tablename__ = "bans"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    ban_reason = Column(String(200))
+    banned_by = Column(Integer)
+    ban_date = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    is_active = Column(Boolean, default=True)
+
+    unbanned_by = Column(Integer, nullable=True)
+    unban_date = Column(DateTime(timezone=True), nullable=True)
+    unban_reason = Column(String(200), nullable=True)
+
+    user = relationship("User", back_populates="bans")
