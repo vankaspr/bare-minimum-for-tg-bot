@@ -1,6 +1,8 @@
+import os
 import sys
 import logging
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 try:
     import colorlog
@@ -12,7 +14,7 @@ class LoggingSettings:
     def __init__(
         self,
         name: str = "YoBa",
-        log_file: str = "logs/bot.log",
+        log_file: str = None,
         console_level: str = "INFO",
         file_level: str = "DEBUG",
         max_bytes: int = 5 * 1024 * 1024,
@@ -20,6 +22,13 @@ class LoggingSettings:
         fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     ):
+
+        if log_file is None:
+            log_file = str(Path(__file__).parent.parent / "data" / "logs" / "bot.log")
+
+        logs_dir = Path(log_file).parent
+        os.makedirs(logs_dir, exist_ok=True)
+
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
 
@@ -27,6 +36,8 @@ class LoggingSettings:
             fmt=fmt,
             datefmt=datefmt,
         )
+
+
 
         if colorlog:
             self._console_formatter = colorlog.ColoredFormatter(
@@ -74,11 +85,6 @@ class LoggingSettings:
         backup_count: int,
     ) -> RotatingFileHandler:
         """Rotating setting for log-file"""
-        # Создаём директорию, если её нет
-        import os
-
-        os.makedirs(os.path.dirname(log_file), exist_ok=True)
-
         handler = RotatingFileHandler(
             filename=log_file,
             maxBytes=max_bytes,

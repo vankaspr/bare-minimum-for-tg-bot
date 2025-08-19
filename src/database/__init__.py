@@ -2,10 +2,10 @@ import os
 from pathlib import Path
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import declarative_base
-from config import database_url
+from src.config import database_url
 
-db_dir = Path(__file__).parent.parent / "db"
-os.makedirs(db_dir, exist_ok=True)
+db_path = Path(__file__).parent.parent / "data" / "db" / "bot.db"
+os.makedirs(db_path.parent, exist_ok=True)
 
 Base = declarative_base()
 
