@@ -77,7 +77,7 @@ bare-minimun-for-tg-bot/
     ├── main.py                     # Настройка бота (точка входа)  
 ├── Dockerfile
 ├── docker-compose.yml
-├── .env       
+├── .env.example       
 ├── alembic.ini             
 ...    
 └── pyproject.toml                  # Конфигурация Poetry
