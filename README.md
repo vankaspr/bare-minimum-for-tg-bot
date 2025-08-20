@@ -20,7 +20,7 @@
 git clone https://github.com/vankaspr/bare-minimun-for-tg-bot.git
 poetry install
 ```
-(.env.example)
+_(.env.example)_
 ```
 # Токен можно получить в ТГ-боте @BotFather
 BOT_TOKEN=<your-bot-token>
@@ -34,7 +34,7 @@ ADMIN=<your-admin-id>
 # URL Базы данных
 DATABASE_URL=<your--asyncio-bd-url>
 ```
-(alembic.ini)
+_(alembic.ini)_
 ```
 # URL Базы данных
 sqlalchemy.url = <your--asyncio-bd-url>
@@ -55,8 +55,8 @@ poetry run python src/main.py
 ```
 bare-minimun-for-tg-bot/
 ├── data/                           # Файлики с БД и логами
-    ├── bd/                         # Создаётя при первом запуске (подробнее в config.py)
-        ├── bot.db  
+    ├── bd/                         # data/ создаётся при первом запуске
+        ├── bot.db                  
     ├── logs/
         ├── bot.log 
 ├── src/
