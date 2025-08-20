@@ -1,15 +1,14 @@
 """
-Handler for command --> /admin ✅
-Handler for callback --> admin:admin ✅
-Handler for callback --> admin:users ✅
-                            --> admin:active_ban ✅
-                            --> admin:active_ban_list ✅
-                            --> admin:found_user ✅
-                                --> admin:user_ban ✅
-                                --> admin:user_unban ✅
-                                --> admin:user_mes ✅
-Handler for callback --> admin:error_logs ✅
-Handler for callback --> admin:payments
+Handler for command --> /admin
+Handler for callback --> admin:admin
+Handler for callback --> admin:users
+                            --> admin:active_ban
+                            --> admin:active_ban_list
+                            --> admin:found_user
+                                --> admin:user_ban
+                                --> admin:user_unban
+                                --> admin:user_mes
+Handler for callback --> admin:error_logs
 Handler for callback --> admin:broadcast
 """
 
@@ -131,14 +130,6 @@ async def get_admin_logs(callback: CallbackQuery):
 
 
 # --- Дополнительные разделы ---
-@admin_router.callback_query(F.data == "admin:payments")
-async def get_admin_payments(callback: CallbackQuery):
-    await callback.answer()
-    logger.info("Получении информации о платежах с колбэка")
-    await callback.message.answer(
-        "Здесь будет лежать инфа о платежах" "На случай если я включу платежи",
-    )
-
 
 class BroadcastStates(StatesGroup):
     waiting_message = State()
