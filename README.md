@@ -12,15 +12,20 @@
   - view active bans;
   - view the latest logs directly in the bot
 ---
-## 🚀 Quick start:
 
-### Prerequisites
-- Python 3.12+
-- Poetry (`pip install poetry`)
+## 🛠️ Technologies used
+
+- Python 3.12
+- Aiogram 3.x
+- SQLAlchemy + Alembic
+- SQLite
+- Poetry для управления зависимостями
+---
+## 🚀 Quick start:
 ###
 ```
-git clone https://github.com/vankaspr/bare-minimun-for-tg-bot.git
-cd bare-minimun-for-tg-bot
+git clone https://github.com/vankaspr/bare-minimum-for-tg-bot.git
+cd bare-minimum-for-tg-bot
 cp .env.example .env
 # Edit .env with your values
 poetry install
