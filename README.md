@@ -77,7 +77,7 @@ bare-minimun-for-tg-bot/
     ├── database/                   # настройка БД, модели, CRUD
     ├── settings/                    
         ├── loader.py          
-    ├── confih.py                   # Пути к папкам + загрузка из env
+    ├── config.py                   # Пути к папкам + загрузка из env
     ├── main.py                     # Настройка бота (точка входа)  
 ├── .env.example       
 ├── alembic.ini             
