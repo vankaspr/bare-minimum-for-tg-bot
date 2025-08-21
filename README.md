@@ -79,8 +79,6 @@ bare-minimun-for-tg-bot/
         ├── loader.py          
     ├── confih.py                   # Пути к папкам + загрузка из env
     ├── main.py                     # Настройка бота (точка входа)  
-├── Dockerfile
-├── docker-compose.yml
 ├── .env.example       
 ├── alembic.ini             
 ...    
