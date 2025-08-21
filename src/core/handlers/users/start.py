@@ -5,7 +5,7 @@ Handler for callback --> /help
 """
 
 from aiogram import Router, F
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,13 +21,17 @@ router.callback_query.filter(BannedUserFilter())
 
 
 @router.message(CommandStart())
-async def cmd_start(message: Message, session: AsyncSession):
+async def handle_start(message: Message, session: AsyncSession):
     """Main menu"""
     user = await get_or_create_user(session, message.from_user)
-    sms = "Йо, шалупыга!\n\n" "<b>Я - Йоба</b>"
-    logger.debug(f"Привет, {user.username or user.id}! Ты добавлен в базу данных.")
+    text = (f"Привет <b>{message.from_user.full_name}!</b>\n"
+           f"Я Йоба Бот, пока ничего не умеющий -_-")
+
+    logger.debug(f"Пользователь {user.username or user.id} добавлен в базу данных.")
     await message.answer(
-        sms, reply_markup=menu_kb(message.from_user.id), parse_mode="HTML"
+        text,
+        reply_markup=menu_kb(message.from_user.id),
+        parse_mode="HTML"
     )
 
 
@@ -41,8 +45,8 @@ async def cmd_back_to_home(call: CallbackQuery):
     )
 
 
-@router.message(F.text.lower() == "/help")
-async def get_help(message: Message):
+@router.message(Command("help"))
+async def handle_help(message: Message):
     """Help cmd"""
     logger.info("Выкатываем список команд")
     sms = (
@@ -52,4 +56,3 @@ async def get_help(message: Message):
         f"Команда <b>...</b>"
     )
     await message.answer(sms, reply_markup=add_only_back_button(), parse_mode="HTML")
-    # TODO: оформить обработчик html
