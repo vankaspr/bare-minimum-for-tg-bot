@@ -7,6 +7,7 @@ Handler for callback --> /help
 from aiogram import Router, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
+from aiogram.utils import markdown
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.crud import get_or_create_user
@@ -24,7 +25,8 @@ router.callback_query.filter(BannedUserFilter())
 async def handle_start(message: Message, session: AsyncSession):
     """Main menu"""
     user = await get_or_create_user(session, message.from_user)
-    text = (f"Привет <b>{message.from_user.full_name}!</b>\n"
+    url = "https://i.pinimg.com/736x/28/38/ad/2838ad4b7cc4b7041132844877f38d3c.jpg"
+    text = (f"Привет {markdown.hide_link(url)} <b>{message.from_user.full_name}!</b>\n"
            f"Я Йоба Бот, пока ничего не умеющий -_-")
 
     logger.debug(f"Пользователь {user.username or user.id} добавлен в базу данных.")
